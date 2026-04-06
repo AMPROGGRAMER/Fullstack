@@ -15,6 +15,21 @@ export const fetchAdminProviders = async () => {
   return data;
 };
 
+export const deleteAdminUser = async (id) => {
+  const { data } = await api.delete(`/admin/users/${id}`);
+  return data;
+};
+
+export const approveAdminProvider = async (id) => {
+  const { data } = await api.patch(`/admin/providers/${id}/approve`);
+  return data;
+};
+
+export const deleteAdminProvider = async (id) => {
+  const { data } = await api.delete(`/admin/providers/${id}`);
+  return data;
+};
+
 export const fetchAdminBookings = async () => {
   const { data } = await api.get("/admin/bookings");
   return data;

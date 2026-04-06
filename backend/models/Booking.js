@@ -8,16 +8,35 @@ const bookingSchema = new mongoose.Schema(
       ref: "Provider",
       required: true
     },
+    service: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
     serviceName: { type: String, required: true, trim: true },
     date: { type: Date, required: true },
+    // store time separately for easier UI binding, even though date includes time
+    time: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled"],
+      enum: ["pending", "accepted", "rejected", "confirmed", "completed", "cancelled"],
       default: "pending"
     },
     amount: { type: Number, default: 0 },
     city: { type: String, trim: true },
-    notes: { type: String, default: "" }
+    notes: { type: String, default: "" },
+    address: { type: String, default: "" },
+    coordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null }
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "paid"],
+      default: "unpaid"
+    },
+    paymentProvider: { type: String, default: "razorpay" },
+    razorpay: {
+      orderId: { type: String, default: "" },
+      paymentId: { type: String, default: "" },
+      signature: { type: String, default: "" }
+    }
   },
   { timestamps: true }
 );

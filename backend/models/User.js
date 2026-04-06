@@ -1,6 +1,17 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const walletTransactionSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ["credit", "debit"], required: true },
+    amount: { type: Number, required: true, min: 0 },
+    reason: { type: String, default: "" },
+    booking: { type: mongoose.Schema.Types.ObjectId, ref: "Booking" },
+    createdAt: { type: Date, default: Date.now }
+  },
+  { _id: true }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -19,7 +30,10 @@ const userSchema = new mongoose.Schema(
     },
     phone: String,
     city: String,
-    avatarUrl: String
+    avatarUrl: String,
+    favorites: { type: [mongoose.Schema.Types.ObjectId], ref: "Provider", default: [] },
+    walletBalance: { type: Number, default: 0, min: 0 },
+    walletTransactions: { type: [walletTransactionSchema], default: [] }
   },
   { timestamps: true }
 );

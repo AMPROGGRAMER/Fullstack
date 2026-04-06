@@ -5,6 +5,7 @@ import AppShell from "../shell/AppShell.jsx";
 import HomePage from "../pages/user/HomePage.jsx";
 import CategoriesPage from "../pages/user/CategoriesPage.jsx";
 import ServicesPage from "../pages/user/ServicesPage.jsx";
+import CategoryServicesPage from "../pages/user/CategoryServices.jsx";
 import ProviderProfilePage from "../pages/user/ProviderProfilePage.jsx";
 import BookingPage from "../pages/user/BookingPage.jsx";
 import BookingConfirmationPage from "../pages/user/BookingConfirmationPage.jsx";
@@ -47,6 +48,7 @@ const AppRouter = () => {
         {/* User area */}
         <Route path="/" element={<HomePage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/category/:name" element={<CategoryServicesPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/providers/:id" element={<ProviderProfilePage />} />
         <Route path="/booking" element={<BookingPage />} />

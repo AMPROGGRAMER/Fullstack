@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchCategories } from "../../services/categoryService.js";
+import CategoryCard from "../../components/CategoryCard.jsx";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
@@ -34,13 +35,7 @@ const CategoriesPage = () => {
       ) : (
         <div className="grid-auto">
           {categories.map((cat) => (
-            <div key={cat._id} className="category-card">
-              <div className="category-icon">{cat.icon || "🧰"}</div>
-              <div className="category-name">{cat.name}</div>
-              <div className="category-count">
-                {cat.count || 0} providers
-              </div>
-            </div>
+            <CategoryCard key={cat._id} category={cat} />
           ))}
         </div>
       )}

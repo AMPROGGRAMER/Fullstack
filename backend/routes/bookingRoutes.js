@@ -1,42 +1,29 @@
 import express from "express";
-import Booking from "../models/Booking.js";
-import Provider from "../models/Provider.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, requireRole } from "../middleware/authMiddleware.js";
+import {
+  createBooking,
+  getMyBookings,
+  getProviderBookings,
+  payBookingWithWallet,
+  updateBookingStatus
+} from "../controllers/bookingController.js";
 
 const router = express.Router();
 
-router.post("/", protect, async (req, res, next) => {
-  try {
-    const { providerId, serviceName, date, amount, city, notes } = req.body;
-    const provider = await Provider.findById(providerId);
-    if (!provider) return res.status(404).json({ message: "Provider not found" });
+// Customer creates a booking
+router.post("/", protect, createBooking);
 
-    const booking = await Booking.create({
-      user: req.user._id,
-      provider: provider._id,
-      serviceName,
-      date,
-      amount,
-      city,
-      notes
-    });
+// Customer views their bookings
+router.get("/my", protect, getMyBookings);
 
-    res.status(201).json(booking);
-  } catch (err) {
-    next(err);
-  }
-});
+// Provider views bookings for their services
+router.get("/provider", protect, requireRole("provider"), getProviderBookings);
 
-router.get("/my", protect, async (req, res, next) => {
-  try {
-    const bookings = await Booking.find({ user: req.user._id })
-      .populate("provider", "name category city location priceFrom priceUnit emoji")
-      .sort({ createdAt: -1 });
-    res.json(bookings);
-  } catch (err) {
-    next(err);
-  }
-});
+// Customer pays an existing booking using wallet
+router.post("/:id/pay/wallet", protect, requireRole("user"), payBookingWithWallet);
+
+// Provider updates booking status (accept/reject/complete/cancel)
+router.patch("/:id/status", protect, requireRole("provider"), updateBookingStatus);
 
 export default router;
 

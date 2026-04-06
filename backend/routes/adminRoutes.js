@@ -9,6 +9,7 @@ const router = express.Router();
 // All admin routes require admin role
 router.use(protect, requireRole("admin"));
 
+// High-level dashboard summary
 router.get("/summary", async (req, res, next) => {
   try {
     const [users, providers, bookings] = await Promise.all([
@@ -35,6 +36,7 @@ router.get("/summary", async (req, res, next) => {
   }
 });
 
+// View all users
 router.get("/users", async (req, res, next) => {
   try {
     const users = await User.find({}).select("-password").limit(200);
@@ -44,6 +46,17 @@ router.get("/users", async (req, res, next) => {
   }
 });
 
+// Delete a user
+router.delete("/users/:id", async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// View all providers
 router.get("/providers", async (req, res, next) => {
   try {
     const providers = await Provider.find({}).limit(200);
@@ -53,6 +66,32 @@ router.get("/providers", async (req, res, next) => {
   }
 });
 
+// Approve provider (simple boolean flag on provider document)
+router.patch("/providers/:id/approve", async (req, res, next) => {
+  try {
+    const provider = await Provider.findByIdAndUpdate(
+      req.params.id,
+      { $set: { approved: true } },
+      { new: true }
+    );
+    if (!provider) return res.status(404).json({ message: "Provider not found" });
+    res.json(provider);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Delete provider
+router.delete("/providers/:id", async (req, res, next) => {
+  try {
+    await Provider.findByIdAndDelete(req.params.id);
+    res.json({ message: "Provider deleted" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// View all bookings
 router.get("/bookings", async (req, res, next) => {
   try {
     const bookings = await Booking.find({})
