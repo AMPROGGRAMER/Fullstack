@@ -3,6 +3,8 @@ import http from "http";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { Server as SocketIOServer } from "socket.io";
 import path from "path";
 
@@ -30,19 +32,65 @@ await connectDB();
 const app = express();
 const server = http.createServer(app);
 
-app.use(express.json());
-app.use(cors());
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for development (enable in production)
+  crossOriginEmbedderPolicy: false
+}));
 
+// Rate limiting for auth routes (prevent brute force) - DISABLED for project demo
+// Re-enable after changing these values for production:
+// windowMs: 15 * 60 * 1000 (15 minutes), max: 10 (10 attempts)
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute for demo
+  max: 100, // 100 attempts per minute (very lenient for testing)
+  message: { message: "Too many attempts, please try again in 1 minute" },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === "GET" // Skip GET requests
+});
+
+// General rate limiting - DISABLED for project demo
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1000, // 1000 requests per minute (very lenient)
+  message: { message: "Too many requests, please try again later" },
+  skip: (req) => req.method === "GET" // Allow unlimited GET requests
+});
+
+app.use(generalLimiter);
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+app.use(express.json({ limit: '10mb' }));
 app.use(morgan("dev"));
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
+
 app.get("/", (req, res) => {
   res.send("ServeLocal API running");
 });
 
-app.use("/api/auth", authRoutes);
+// Apply rate limiting to auth routes
+app.use("/api/auth", authLimiter, authRoutes);
+
 app.use("/api/providers", providerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -58,7 +106,8 @@ app.use("/api/disputes", disputeRoutes);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "*"
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true
   }
 });
 

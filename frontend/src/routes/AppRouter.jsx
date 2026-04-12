@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import AppShell from "../shell/AppShell.jsx";
+import { AdminRoute, ProviderRoute, AuthenticatedRoute } from "../components/ProtectedRoute.jsx";
 
 import HomePage from "../pages/user/HomePage.jsx";
 import CategoriesPage from "../pages/user/CategoriesPage.jsx";
@@ -45,45 +46,47 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        {/* User area */}
+        {/* Public routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:name" element={<CategoryServicesPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/providers/:id" element={<ProviderProfilePage />} />
-        <Route path="/booking" element={<BookingPage />} />
-        <Route path="/booking/confirmation" element={<BookingConfirmationPage />} />
-        <Route path="/bookings" element={<BookingsPage />} />
-        <Route path="/order-tracking" element={<OrderTrackingPage />} />
-        <Route path="/favorites" element={<FavoritesPage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/profile/edit" element={<EditProfilePage />} />
-        <Route path="/wallet" element={<WalletPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/chat" element={<ChatPage />} />
 
-        {/* Provider area */}
-        <Route path="/provider/dashboard" element={<ProviderDashboard />} />
-        <Route path="/provider/add-service" element={<AddServicePage />} />
-        <Route path="/provider/services" element={<ManageServicesPage />} />
-        <Route path="/provider/booking-requests" element={<BookingRequestsPage />} />
-        <Route path="/provider/earnings" element={<EarningsPage />} />
-        <Route path="/provider/availability" element={<AvailabilityPage />} />
-        <Route path="/provider/portfolio" element={<PortfolioPage />} />
-        <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
+        {/* Authenticated user routes */}
+        <Route path="/booking" element={<AuthenticatedRoute><BookingPage /></AuthenticatedRoute>} />
+        <Route path="/booking/confirmation" element={<AuthenticatedRoute><BookingConfirmationPage /></AuthenticatedRoute>} />
+        <Route path="/bookings" element={<AuthenticatedRoute><BookingsPage /></AuthenticatedRoute>} />
+        <Route path="/order-tracking" element={<AuthenticatedRoute><OrderTrackingPage /></AuthenticatedRoute>} />
+        <Route path="/favorites" element={<AuthenticatedRoute><FavoritesPage /></AuthenticatedRoute>} />
+        <Route path="/reviews" element={<AuthenticatedRoute><ReviewsPage /></AuthenticatedRoute>} />
+        <Route path="/profile" element={<AuthenticatedRoute><ProfilePage /></AuthenticatedRoute>} />
+        <Route path="/profile/edit" element={<AuthenticatedRoute><EditProfilePage /></AuthenticatedRoute>} />
+        <Route path="/wallet" element={<AuthenticatedRoute><WalletPage /></AuthenticatedRoute>} />
+        <Route path="/notifications" element={<AuthenticatedRoute><NotificationsPage /></AuthenticatedRoute>} />
+        <Route path="/chat" element={<AuthenticatedRoute><ChatPage /></AuthenticatedRoute>} />
 
-        {/* Admin area */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<ManageUsersPage />} />
-        <Route path="/admin/providers" element={<ManageProvidersPage />} />
-        <Route path="/admin/services" element={<AdminManageServicesPage />} />
-        <Route path="/admin/reviews" element={<ReviewModerationPage />} />
-        <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
-        <Route path="/admin/disputes" element={<DisputeResolutionPage />} />
+        {/* Provider only routes */}
+        <Route path="/provider/dashboard" element={<ProviderRoute><ProviderDashboard /></ProviderRoute>} />
+        <Route path="/provider/add-service" element={<ProviderRoute><AddServicePage /></ProviderRoute>} />
+        <Route path="/provider/services" element={<ProviderRoute><ManageServicesPage /></ProviderRoute>} />
+        <Route path="/provider/booking-requests" element={<ProviderRoute><BookingRequestsPage /></ProviderRoute>} />
+        <Route path="/provider/earnings" element={<ProviderRoute><EarningsPage /></ProviderRoute>} />
+        <Route path="/provider/availability" element={<ProviderRoute><AvailabilityPage /></ProviderRoute>} />
+        <Route path="/provider/portfolio" element={<ProviderRoute><PortfolioPage /></ProviderRoute>} />
+        <Route path="/provider/reviews" element={<ProviderRoute><ProviderReviewsPage /></ProviderRoute>} />
+
+        {/* Admin only routes */}
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><ManageUsersPage /></AdminRoute>} />
+        <Route path="/admin/providers" element={<AdminRoute><ManageProvidersPage /></AdminRoute>} />
+        <Route path="/admin/services" element={<AdminRoute><AdminManageServicesPage /></AdminRoute>} />
+        <Route path="/admin/reviews" element={<AdminRoute><ReviewModerationPage /></AdminRoute>} />
+        <Route path="/admin/analytics" element={<AdminRoute><AnalyticsDashboard /></AdminRoute>} />
+        <Route path="/admin/disputes" element={<AdminRoute><DisputeResolutionPage /></AdminRoute>} />
       </Route>
 
-      {/* Auth */}
+      {/* Auth routes - outside AppShell (no sidebar) */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

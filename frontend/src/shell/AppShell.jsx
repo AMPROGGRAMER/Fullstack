@@ -169,6 +169,7 @@ const AppShell = () => {
                   className="btn btn-outline btn-sm" 
                   onClick={logout}
                   type="button"
+                  aria-label="Log out"
                 >
                   <LogOut size={16} />
                 </button>

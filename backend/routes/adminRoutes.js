@@ -105,5 +105,138 @@ router.get("/bookings", async (req, res, next) => {
   }
 });
 
+// Analytics data for charts
+router.get("/analytics", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const last30Days = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    const last7Days = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+    // Bookings by status
+    const bookingStatus = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Bookings trend (last 30 days)
+    const bookingsTrend = await Booking.aggregate([
+      { $match: { createdAt: { $gte: last30Days } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 },
+          revenue: { $sum: "$amount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Users by role
+    const usersByRole = await User.aggregate([
+      {
+        $group: {
+          _id: "$role",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Providers by category
+    const providersByCategory = await Provider.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Revenue by category
+    const revenueByCategory = await Booking.aggregate([
+      { $match: { paymentStatus: "paid" } },
+      {
+        $lookup: {
+          from: "providers",
+          localField: "provider",
+          foreignField: "_id",
+          as: "providerData"
+        }
+      },
+      { $unwind: "$providerData" },
+      {
+        $group: {
+          _id: "$providerData.category",
+          revenue: { $sum: "$amount" }
+        }
+      }
+    ]);
+
+    // Top providers by bookings
+    const topProviders = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$provider",
+          bookings: { $sum: 1 },
+          revenue: { $sum: "$amount" }
+        }
+      },
+      { $sort: { bookings: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "providers",
+          localField: "_id",
+          foreignField: "_id",
+          as: "providerInfo"
+        }
+      },
+      { $unwind: "$providerInfo" },
+      {
+        $project: {
+          name: "$providerInfo.name",
+          category: "$providerInfo.category",
+          bookings: 1,
+          revenue: 1
+        }
+      }
+    ]);
+
+    // Recent stats (last 7 days vs previous 7 days)
+    const recentStats = await Booking.aggregate([
+      {
+        $facet: {
+          last7Days: [
+            { $match: { createdAt: { $gte: last7Days } } },
+            { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: "$amount" } } }
+          ],
+          previous7Days: [
+            { $match: { createdAt: { $gte: new Date(last7Days - 7 * 24 * 60 * 60 * 1000), $lt: last7Days } } },
+            { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: "$amount" } } }
+          ]
+        }
+      }
+    ]);
+
+    res.json({
+      bookingStatus,
+      bookingsTrend,
+      usersByRole,
+      providersByCategory,
+      revenueByCategory,
+      topProviders,
+      recentStats: {
+        last7Days: recentStats[0]?.last7Days[0] || { count: 0, revenue: 0 },
+        previous7Days: recentStats[0]?.previous7Days[0] || { count: 0, revenue: 0 }
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
 

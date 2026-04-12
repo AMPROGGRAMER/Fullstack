@@ -1,13 +1,20 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import User from "../models/User.js";
 import Provider from "../models/Provider.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { sendPasswordResetEmail, sendWelcomeEmail } from "../utils/emailService.js";
 
 const router = express.Router();
 
 const generateToken = (id, role) =>
   jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+// Generate random reset token
+const generateResetToken = () => {
+  return crypto.randomBytes(32).toString("hex");
+};
 
 router.post("/register", async (req, res, next) => {
   try {
@@ -31,6 +38,9 @@ router.post("/register", async (req, res, next) => {
     }
     
     const token = generateToken(user._id, user.role);
+    
+    // Send welcome email (async, don't block response)
+    sendWelcomeEmail(user.email, user.name).catch(console.error);
 
     res.json({
       token,
@@ -84,6 +94,74 @@ router.post("/setup-admin", async (req, res, next) => {
       message: "Admin created successfully",
       user: { id: admin._id, name: admin.name, email: admin.email, role: admin.role }
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Forgot password - send reset email
+router.post("/forgot-password", async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    // Don't reveal if email exists or not (security)
+    if (!user) {
+      return res.json({ message: "If an account exists, a reset email has been sent" });
+    }
+
+    // Generate reset token
+    const resetToken = generateResetToken();
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Save to user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetExpires;
+    await user.save();
+
+    // Send email
+    await sendPasswordResetEmail(user.email, resetToken, user.name);
+
+    res.json({ message: "If an account exists, a reset email has been sent" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Reset password with token
+router.post("/reset-password", async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    // Update password
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
   } catch (err) {
     next(err);
   }

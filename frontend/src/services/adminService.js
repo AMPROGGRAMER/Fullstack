@@ -35,3 +35,8 @@ export const fetchAdminBookings = async () => {
   return data;
 };
 
+export const fetchAnalytics = async () => {
+  const { data } = await api.get("/admin/analytics");
+  return data;
+};
+

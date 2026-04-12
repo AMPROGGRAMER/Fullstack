@@ -20,20 +20,24 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
+      index: true
     },
     password: { type: String, required: true },
     role: {
       type: String,
       enum: ["user", "provider", "admin"],
-      default: "user"
+      default: "user",
+      index: true
     },
     phone: String,
     city: String,
     avatarUrl: String,
     favorites: { type: [mongoose.Schema.Types.ObjectId], ref: "Provider", default: [] },
     walletBalance: { type: Number, default: 0, min: 0 },
-    walletTransactions: { type: [walletTransactionSchema], default: [] }
+    walletTransactions: { type: [walletTransactionSchema], default: [] },
+    resetPasswordToken: { type: String, default: null, index: true },
+    resetPasswordExpires: { type: Date, default: null, index: true }
   },
   { timestamps: true }
 );

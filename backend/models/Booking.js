@@ -2,21 +2,23 @@ import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     provider: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Provider",
-      required: true
+      required: true,
+      index: true
     },
     service: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
     serviceName: { type: String, required: true, trim: true },
-    date: { type: Date, required: true },
+    date: { type: Date, required: true, index: true },
     // store time separately for easier UI binding, even though date includes time
     time: { type: String, default: "" },
     status: {
       type: String,
       enum: ["pending", "accepted", "rejected", "confirmed", "completed", "cancelled"],
-      default: "pending"
+      default: "pending",
+      index: true
     },
     amount: { type: Number, default: 0 },
     city: { type: String, trim: true },

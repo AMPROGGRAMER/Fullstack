@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import AppRouter from "./routes/AppRouter.jsx";
 import Toast from "./components/common/Toast.jsx";
 import { useApp } from "./context/AppContext.jsx";
+import "./styles.css";
 
 const App = () => {
   const { toast } = useApp();

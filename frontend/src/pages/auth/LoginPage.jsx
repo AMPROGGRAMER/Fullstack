@@ -18,7 +18,16 @@ const LoginPage = () => {
       const data = await login(email, password);
       setUser(data.user);
       showToast("success", "Welcome back!");
-      navigate("/");
+      
+      // Redirect based on user role
+      const userRole = data.user?.role;
+      if (userRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "provider") {
+        navigate("/provider/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       showToast("error", err?.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {

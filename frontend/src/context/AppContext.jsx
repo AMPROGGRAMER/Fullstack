@@ -6,6 +6,7 @@ const AppContext = createContext(null);
 export const AppProvider = ({ children }) => {
   const [theme, setTheme] = useState("dark");
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -15,10 +16,15 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const init = async () => {
       try {
-        const data = await me();
-        setUser(data?.user || null);
+        const token = localStorage.getItem("sl_token");
+        if (token) {
+          const data = await me();
+          setUser(data?.user || null);
+        }
       } catch {
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
     init();
@@ -30,8 +36,8 @@ export const AppProvider = ({ children }) => {
   };
 
   const value = useMemo(
-    () => ({ theme, setTheme, user, setUser, toast, showToast }),
-    [theme, user, toast]
+    () => ({ theme, setTheme, user, setUser, loading, toast, showToast }),
+    [theme, user, loading, toast]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
