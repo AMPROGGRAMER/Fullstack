@@ -128,7 +128,7 @@ app.use("/api/disputes", disputeRoutes);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || ["http://localhost:5173",'https://frontendnew-98fpyl91x-abhay-malis-projects.vercel.app'],
     credentials: true
   }
 });
