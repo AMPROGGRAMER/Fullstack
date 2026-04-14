@@ -1,6 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, ArrowUpRight } from "lucide-react";
+import { Briefcase, ArrowUpRight, Wrench, Zap, Hammer, Paintbrush, Wind, Tv, Droplets, Filter, Flame, Microwave, Utensils, Sparkles, Bath, ChefHat, Sofa, SquareStack, Bug, Flower2, Scissors, Hand, Activity, Dumbbell, Apple, Car, Bike, Droplet, CarFront, Camera, Video, UtensilsCrossed, PartyPopper, Music, Guitar, PersonStanding, Wand2, Calculator, FlaskConical, BookOpen, Music2, Palette, Code, Monitor, Laptop, Smartphone, Printer, Wifi, Download, BrickWall, Grid3x3, Shield, Layers, Home, ShieldCheck, Key, Dog, GraduationCap, HeartPulse, Baby, Shirt, Truck, Refrigerator, KeyRound } from "lucide-react";
+
+const iconMap = {
+  Wrench, Zap, Hammer, Paintbrush, Wind, Tv, Refrigerator, Droplets, Filter, Flame, Microwave,
+  Utensils, Sparkles, Bath, ChefHat, Sofa, SquareStack, Bug, Flower2, Scissors, Hand, Activity,
+  Dumbbell, Apple, Car, Bike, Droplet, CarFront, Camera, Video, UtensilsCrossed, PartyPopper,
+  Music, Guitar, PersonStanding, Wand2, Calculator, FlaskConical, BookOpen, Music2, Palette, Code,
+  Monitor, Laptop, Smartphone, Printer, Wifi, Download, BrickWall, Grid3x3, Shield, Layers, Home,
+  ShieldCheck, Key, Dog, GraduationCap, HeartPulse, Baby, Shirt, Truck, KeyRound
+};
 
 const CategoryCard = ({ category }) => {
   const navigate = useNavigate();
@@ -9,22 +18,7 @@ const CategoryCard = ({ category }) => {
     navigate(`/category/${encodeURIComponent(category.name)}`);
   };
 
-  const getCategoryIcon = (name) => {
-    const icons = {
-      plumber: "🔧",
-      electrician: "⚡",
-      cleaner: "🧹",
-      tutor: "📚",
-      painter: "🎨",
-      carpenter: "🔨",
-      gardener: "🌱",
-      mechanic: "🔩",
-      driver: "🚗",
-      cook: "👨‍🍳",
-      default: "🔧"
-    };
-    return icons[name?.toLowerCase()] || category.icon || icons.default;
-  };
+  const IconComponent = iconMap[category.icon] || Wrench;
 
   return (
     <button
@@ -33,9 +27,7 @@ const CategoryCard = ({ category }) => {
       onClick={handleClick}
     >
       <div className="category-icon">
-        <span style={{ fontSize: '32px' }}>
-          {getCategoryIcon(category.name)}
-        </span>
+        <IconComponent size={32} color={category.color || "#3B82F6"} />
       </div>
       <div className="category-name">{category.name}</div>
       <div className="category-count">
